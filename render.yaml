@@ -5,7 +5,8 @@ services:
     runtime: docker
     plan: free
     branch: main
-    autoDeploy: true
+    # O deploy é disparado pelo GitHub Actions (job "Publicar na Render"), depois dos testes.
+    autoDeploy: false
     dockerfilePath: ./src/back/Dockerfile
     dockerContext: ./src/back
     healthCheckPath: /saude
