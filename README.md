@@ -324,6 +324,15 @@ Na nuvem os dados iniciais (instituições e professores) são criados ao subir 
 docker compose run --rm -e DATABASE_URL="<connection string da Neon>" api python -m app.tarefas.creditar_semestre
 ```
 
+### Publicação automática
+
+A cada commit na `main`, o workflow `Testes` (aba Actions do GitHub) roda os testes da API e do front e, se passarem, o job **Publicar na Render** pede o deploy do commit e espera a API responder com a versão nova (a rota `/saude` informa o commit publicado). A Vercel publica o front sozinha, e o deploy automático da Render fica desligado no `render.yaml` para não publicar duas vezes.
+
+Para ligar o job:
+
+1. Na Render, abra o serviço `moeda-estudantil-api`, vá em **Settings → Deploy Hook** e copie o endereço.
+2. No GitHub, vá em **Settings → Secrets and variables → Actions → New repository secret**, crie o segredo `RENDER_DEPLOY_HOOK` e cole o endereço.
+
 ## Entregas por sprint
 
 - **Sprint 1** — diagrama de casos de uso, histórias de usuário, diagrama de classes e
