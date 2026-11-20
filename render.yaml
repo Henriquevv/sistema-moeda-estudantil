@@ -8,7 +8,6 @@ services:
     autoDeploy: true
     dockerfilePath: ./src/back/Dockerfile
     dockerContext: ./src/back
-    dockerCommand: sh -c "alembic upgrade head && python -m app.tarefas.seed && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"
     healthCheckPath: /saude
     envVars:
       - key: DATABASE_URL
