@@ -33,3 +33,6 @@ dist/
 
 # Fotos enviadas durante o uso local
 uploads/
+
+# Gerado no build do front com o commit publicado
+src/front/public/versao.json
