@@ -16,6 +16,7 @@ export function linksDoUsuario(usuario: UsuarioLogado | null): LinkNavegacao[] {
       { para: '/entrar', rotulo: 'Entrar' },
       { para: '/cadastro/aluno', rotulo: 'Sou aluno' },
       { para: '/cadastro/empresa', rotulo: 'Sou empresa' },
+      { para: '/entrar/professor', rotulo: 'Sou professor' },
     ];
   }
   switch (usuario.tipo_usuario) {

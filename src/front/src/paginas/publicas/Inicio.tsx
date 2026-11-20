@@ -30,6 +30,13 @@ const ATALHOS_VISITANTE: Atalho[] = [
     para: '/cadastro/empresa',
     rotulo: 'Cadastrar empresa',
   },
+  {
+    titulo: '🏅 Sou professor',
+    texto:
+      'Os professores já vêm cadastrados pela instituição. Entre com o login e a senha recebidos para enviar moedas.',
+    para: '/entrar/professor',
+    rotulo: 'Entrar como professor',
+  },
 ];
 
 const ATALHOS_ALUNO: Atalho[] = [
