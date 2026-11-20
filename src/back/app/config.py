@@ -17,6 +17,9 @@ class Settings(BaseSettings):
         "http://localhost:3000,http://localhost:5173,http://localhost:8000"
     )
 
+    # Commit publicado; a Render preenche esta variável sozinha.
+    RENDER_GIT_COMMIT: str = "local"
+
     JWT_SEGREDO: str = "troque-este-segredo-no-arquivo-env-por-um-texto-longo"
     JWT_EXPIRA_MINUTOS: int = 120
 

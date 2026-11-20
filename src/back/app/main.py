@@ -44,5 +44,5 @@ app.include_router(router_moedas)
 
 @app.get("/saude", tags=["Saúde"], summary="Verificar saúde da API")
 def verificar_saude() -> dict[str, str]:
-    """Retorna o estado operacional da aplicação para monitoramento de integridade."""
-    return {"status": "ok"}
+    """Retorna o estado operacional e o commit publicado, para monitoramento e conferência."""
+    return {"status": "ok", "versao": settings.RENDER_GIT_COMMIT}
