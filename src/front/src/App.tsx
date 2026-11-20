@@ -25,6 +25,7 @@ export const App: React.FC = () => {
             <Routes>
               <Route path="/" element={<Inicio />} />
               <Route path="/entrar" element={<Entrar />} />
+              <Route path="/entrar/professor" element={<Entrar perfil="professor" />} />
               <Route path="/cadastro/aluno" element={<AlunoFormulario />} />
               <Route path="/cadastro/empresa" element={<EmpresaFormulario />} />
               <Route

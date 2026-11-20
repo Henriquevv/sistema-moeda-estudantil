@@ -13,8 +13,14 @@ const usuario = (tipo_usuario: UsuarioLogado['tipo_usuario']): UsuarioLogado => 
 const rotas = (u: UsuarioLogado | null) => linksDoUsuario(u).map((link) => link.para);
 
 describe('linksDoUsuario', () => {
-  it('mostra login e cadastros ao visitante', () => {
-    expect(rotas(null)).toEqual(['/', '/entrar', '/cadastro/aluno', '/cadastro/empresa']);
+  it('mostra login, cadastros e a entrada do professor ao visitante', () => {
+    expect(rotas(null)).toEqual([
+      '/',
+      '/entrar',
+      '/cadastro/aluno',
+      '/cadastro/empresa',
+      '/entrar/professor',
+    ]);
   });
 
   it('mostra vantagens, extrato e o próprio cadastro ao aluno', () => {

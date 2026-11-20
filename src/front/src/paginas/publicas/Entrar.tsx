@@ -10,8 +10,13 @@ import { useEntrar } from '../../hooks/autenticacao/useEntrar';
 import { useMensagemNavegacao } from '../../hooks/geral/useMensagemNavegacao';
 import { classeBotao } from '../../utils/estilos';
 
-// Monta o formulário de login com os links para os cadastros.
-export const Entrar: React.FC = () => {
+interface EntrarProps {
+  perfil?: 'professor';
+}
+
+// Monta o formulário de login; no acesso do professor, explica que o cadastro já existe.
+export const Entrar: React.FC<EntrarProps> = ({ perfil }) => {
+  const professor = perfil === 'professor';
   const form = useEntrar();
   const { mensagem, setMensagem } = useMensagemNavegacao();
   const { aviso, limparAviso } = useAutenticacao();
@@ -19,7 +24,14 @@ export const Entrar: React.FC = () => {
 
   return (
     <div className="mx-auto max-w-xl">
-      <CabecalhoPagina titulo="Entrar" descricao="Use o login e a senha do seu cadastro" />
+      <CabecalhoPagina
+        titulo={professor ? 'Entrar como professor' : 'Entrar'}
+        descricao={
+          professor
+            ? 'Os professores já vêm cadastrados pela instituição. Use o login e a senha que você recebeu.'
+            : 'Use o login e a senha do seu cadastro'
+        }
+      />
 
       <MensagemAlerta
         tipo="sucesso"
@@ -67,17 +79,27 @@ export const Entrar: React.FC = () => {
         </form>
       </Cartao>
 
-      <p className="text-center text-sm text-slate-500">
-        Ainda não tem cadastro?{' '}
-        <Link to="/cadastro/aluno" className="font-semibold text-indigo-600">
-          Sou aluno
-        </Link>{' '}
-        ou{' '}
-        <Link to="/cadastro/empresa" className="font-semibold text-indigo-600">
-          Sou empresa parceira
-        </Link>
-        .
-      </p>
+      {professor ? (
+        <p className="text-center text-sm text-slate-500">
+          Não é professor?{' '}
+          <Link to="/entrar" className="font-semibold text-indigo-600">
+            Entrar como aluno ou empresa
+          </Link>
+          .
+        </p>
+      ) : (
+        <p className="text-center text-sm text-slate-500">
+          Ainda não tem cadastro?{' '}
+          <Link to="/cadastro/aluno" className="font-semibold text-indigo-600">
+            Sou aluno
+          </Link>{' '}
+          ou{' '}
+          <Link to="/cadastro/empresa" className="font-semibold text-indigo-600">
+            Sou empresa parceira
+          </Link>
+          .
+        </p>
+      )}
     </div>
   );
 };
