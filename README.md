@@ -329,14 +329,14 @@ docker compose run --rm -e DATABASE_URL="<connection string da Neon>" api python
 A cada commit na `main`, o workflow **Testes** (aba Actions do GitHub) roda os testes da API e do front. Quando os dois passam, dois workflows entram em ação:
 
 - **Publicar na Render** pede à Render o deploy daquele commit e espera a API responder com a versão nova (a rota `/saude` informa o commit publicado). Precisa do segredo `RENDER_DEPLOY_HOOK`.
-- **Publicar na Vercel** espera o front responder com o commit novo (o arquivo `/versao.json`, gerado no build). Se existir o segredo `VERCEL_DEPLOY_HOOK`, ele também pede o deploy à Vercel; sem o segredo, só confere o deploy automático da Vercel.
+- **Publicar na Vercel** pede o deploy pelo Deploy Hook e espera o front responder com o commit novo (o arquivo `/versao.json`, gerado no build). Precisa do segredo `VERCEL_DEPLOY_HOOK`. O deploy automático da Vercel pelo Git fica desligado no `src/front/vercel.json` (`git.deploymentEnabled`), para o front só ser publicado depois dos testes.
 
-O deploy automático da Render fica desligado no `render.yaml` para não publicar duas vezes.
+O deploy automático da Render também fica desligado, no `render.yaml`, para não publicar duas vezes.
 
 Para criar os segredos:
 
 1. **Render:** serviço `moeda-estudantil-api` → **Settings → Deploy Hook**, copie o endereço.
-2. **Vercel (opcional):** projeto → **Settings → Git → Deploy Hooks**, crie um hook para a branch `main` e copie o endereço.
+2. **Vercel:** projeto → **Settings → Git → Deploy Hooks**, crie um hook para a branch `main` e copie o endereço.
 3. **GitHub:** **Settings → Secrets and variables → Actions → New repository secret**, com o nome `RENDER_DEPLOY_HOOK` (e `VERCEL_DEPLOY_HOOK`, se criou o da Vercel).
 
 ## Entregas por sprint

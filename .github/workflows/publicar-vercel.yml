@@ -21,8 +21,8 @@ jobs:
           VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
         run: |
           if [ -z "$VERCEL_DEPLOY_HOOK" ]; then
-            echo "Sem o segredo VERCEL_DEPLOY_HOOK: só vou conferir o deploy automático da Vercel."
-            exit 0
+            echo "::error::Falta o segredo VERCEL_DEPLOY_HOOK (endereço do Deploy Hook da Vercel)."
+            exit 1
           fi
           curl -fsS -X POST "$VERCEL_DEPLOY_HOOK" > /dev/null
           echo "Deploy pedido à Vercel."
