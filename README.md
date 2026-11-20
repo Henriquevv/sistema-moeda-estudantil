@@ -259,27 +259,66 @@ src/
     tests/          api, componentes, hooks e utils
 ```
 
-## Como executar
+## Como executar no computador
 
-Requisitos: Docker com Docker Compose.
+### O que precisa ter instalado
+
+- Git
+- Docker com Docker Compose (o Docker Desktop já traz os dois)
+
+### Passo a passo
+
+1. Baixe o projeto e entre na pasta:
+
+```bash
+git clone https://github.com/lucaslmchaves/sistema-moeda-estudantil.git
+cd sistema-moeda-estudantil
+```
+
+2. Suba o sistema (a primeira vez demora alguns minutos, porque baixa as imagens e monta tudo):
 
 ```bash
 docker compose up -d --build
 ```
 
+3. Espere uns 30 segundos. Nesse tempo a API cria as tabelas do banco e os dados iniciais (2 instituições e 3 professores). Para conferir, abra http://localhost:8000/saude e veja se aparece `"status":"ok"`.
+
+4. Abra o sistema:
+
 - Front-end: http://localhost:5173
 - API e documentação: http://localhost:8000/docs
 
-As migrações e os dados iniciais (2 instituições e 3 professores) são aplicados ao subir a API. Os valores padrão do banco estão em `.env.example`; para mudá-los, copie o arquivo para `.env`.
+Não precisa criar o arquivo `.env`: os valores padrão já funcionam. Ele só é necessário para configurar o envio de e-mails (veja mais abaixo).
 
-### Acesso ao sistema
+### Como testar
 
-- **Professores** (já cadastrados, cada um com 1.000 moedas): `prof.carlos`, `prof.ana` e `prof.marcos`, todos com a senha `senha1234`.
-- **Alunos** e **empresas parceiras** se cadastram pelas telas "Sou aluno" e "Sou empresa" e depois entram com o login e a senha escolhidos.
+1. **Professor:** os professores já vêm cadastrados. Clique em "Sou professor" e entre com `prof.carlos` e a senha `senha1234` (também existem `prof.ana` e `prof.marcos`, com a mesma senha). Cada um começa com 1.000 moedas.
+2. **Aluno:** clique em "Sou aluno" e faça o cadastro. Use um CPF válido, por exemplo `529.982.247-25`, e uma senha com pelo menos 8 caracteres.
+3. **Empresa parceira:** clique em "Sou empresa" e faça o cadastro. Use um CNPJ válido, por exemplo `11.222.333/0001-81`.
+4. Entre como a **empresa**, vá em "Minhas vantagens" e cadastre uma vantagem com descrição, custo em moedas e uma foto (JPEG, PNG ou WebP de até 2 MB).
+5. Entre como o **professor** e, em "Enviar moedas", mande moedas ao aluno com o motivo.
+6. Entre como o **aluno**, veja o catálogo em "Vantagens", troque moedas por uma vantagem e confira o saldo em "Extrato".
 
 ### E-mails
 
-O sistema envia o aviso de moedas recebidas e os e-mails do resgate (cupom para o aluno e conferência para a empresa). Para enviar de verdade pelo Gmail, copie `.env.example` para `.env` e preencha `SMTP_USUARIO` e `SMTP_SENHA` (uma senha de aplicativo da conta Google). Sem essas informações, os e-mails não são enviados e o conteúdo aparece no log da API (`docker compose logs api`).
+O sistema manda o aviso de moedas recebidas e, no resgate, o cupom para o aluno e a conferência para a empresa. Sem configurar nada, os e-mails **não são enviados**: o conteúdo de cada um aparece no log da API. Para ver:
+
+```bash
+docker compose logs api
+```
+
+Para enviar de verdade, copie o arquivo de exemplo e preencha as variáveis de e-mail:
+
+```bash
+cp .env.example .env
+```
+
+No Windows, no lugar do `cp` use `copy .env.example .env`. Depois abra o `.env` e preencha:
+
+- **Com o Brevo:** `SMTP_HOST=smtp-relay.brevo.com`, `SMTP_PORTA=2525`, `SMTP_USUARIO` (login SMTP do Brevo), `SMTP_SENHA` (chave SMTP) e `EMAIL_REMETENTE` (e-mail remetente verificado no Brevo). A criação da conta está em "E-mails na nuvem (Brevo)", mais abaixo.
+- **Com o Gmail:** `SMTP_HOST=smtp.gmail.com`, `SMTP_PORTA=587`, `SMTP_USUARIO` e `EMAIL_REMETENTE` com o seu Gmail, e `SMTP_SENHA` com uma senha de aplicativo da conta Google (não é a senha normal).
+
+Depois de salvar o `.env`, rode `docker compose up -d` de novo para a API ler os valores. O arquivo `.env` não vai para o GitHub, então as suas senhas ficam só no seu computador.
 
 ### Moedas do semestre
 
@@ -288,6 +327,25 @@ A cada semestre, o crédito de 1.000 moedas aos professores é feito com o coman
 ```bash
 docker compose exec api python -m app.tarefas.creditar_semestre
 ```
+
+### Rodar os testes
+
+```bash
+docker compose exec api python -m pytest -q
+```
+
+Os testes do front-end precisam do Node 22 instalado:
+
+```bash
+cd src/front
+npm ci
+npm test
+```
+
+### Parar e recomeçar
+
+- Para parar o sistema e manter os dados: `docker compose down`
+- Para parar e apagar tudo, inclusive o banco: `docker compose down -v`
 
 ## Publicação na nuvem
 
@@ -313,7 +371,7 @@ No plano gratuito a API dorme depois de 15 minutos sem acesso, e a primeira aber
 ### Passo a passo
 
 1. **Neon**: crie um projeto com PostgreSQL 16 e copie a connection string (começa com `postgresql://` e termina com `?sslmode=require`).
-2. **Brevo**: crie uma conta, verifique o e-mail remetente e gere uma chave SMTP em "SMTP e API". Anote o login SMTP e a chave.
+2. **Brevo**: crie a conta e gere a chave SMTP, como explicado em "E-mails na nuvem (Brevo)" mais abaixo. Anote o login SMTP e a chave.
 3. **Render**: em "New", escolha "Blueprint" e o repositório do GitHub. Preencha `DATABASE_URL` (a connection string da Neon), `SMTP_USUARIO` (login SMTP da Brevo), `SMTP_SENHA` (chave SMTP), `EMAIL_REMETENTE` (o e-mail verificado) e deixe `CORS_ORIGINS` por enquanto com qualquer valor. Quando o deploy terminar, abra `/saude` e `/docs` no endereço da API.
 4. **Vercel**: importe o repositório, informe `src/front` em "Root Directory" e crie a variável `VITE_API_URL` com o endereço da API da Render, sem barra no final. Faça o deploy.
 5. **Render de novo**: troque `CORS_ORIGINS` pelo endereço da Vercel, sem barra no final, e salve. A API reinicia e o front passa a conseguir chamá-la.
@@ -323,6 +381,17 @@ Na nuvem os dados iniciais (instituições e professores) são criados ao subir 
 ```bash
 docker compose run --rm -e DATABASE_URL="<connection string da Neon>" api python -m app.tarefas.creditar_semestre
 ```
+
+### E-mails na nuvem (Brevo)
+
+A Render gratuita bloqueia as portas 25, 465 e 587, então o Gmail não funciona lá. Por isso os e-mails saem pelo Brevo, na porta 2525 (plano grátis, até 300 e-mails por dia).
+
+1. Crie uma conta em brevo.com. Antes de enviar, o Brevo pede para verificar o telefone (aparece um aviso azul na tela inicial).
+2. Em **Configurações → Remetentes, domínios e IPs dedicados → Remetentes**, confira se o seu e-mail aparece como **verificado**. Se não, adicione e confirme pelo código que chega nele.
+3. Em **SMTP e API → SMTP**, anote o **Login** (termina em `@smtp-brevo.com`) e clique em **Gerar chave SMTP**. Copie a chave na hora, porque ela só aparece uma vez. Não ative o bloqueio de IPs, porque a Render troca de IP.
+4. Na Render, em **Environment** do serviço `moeda-estudantil-api`, preencha `SMTP_USUARIO` (o login), `SMTP_SENHA` (a chave) e `EMAIL_REMETENTE` (o e-mail verificado). O servidor e a porta já estão no `render.yaml`. Ao salvar, a API reinicia.
+
+Quem recebe o e-mail precisa ter um endereço de verdade. Se o remetente for um Gmail, o Brevo mostra um aviso sobre o domínio e envia por um domínio dele; no teste o e-mail chegou na caixa de entrada, mas outros provedores podem mandar para o spam.
 
 ### Publicação automática
 
@@ -337,7 +406,7 @@ Para criar os segredos:
 
 1. **Render:** serviço `moeda-estudantil-api` → **Settings → Deploy Hook**, copie o endereço.
 2. **Vercel:** projeto → **Settings → Git → Deploy Hooks**, crie um hook para a branch `main` e copie o endereço.
-3. **GitHub:** **Settings → Secrets and variables → Actions → New repository secret**, com o nome `RENDER_DEPLOY_HOOK` (e `VERCEL_DEPLOY_HOOK`, se criou o da Vercel).
+3. **GitHub:** **Settings → Secrets and variables → Actions → New repository secret**, um com o nome `RENDER_DEPLOY_HOOK` e outro com o nome `VERCEL_DEPLOY_HOOK`.
 
 ## Entregas por sprint
 
