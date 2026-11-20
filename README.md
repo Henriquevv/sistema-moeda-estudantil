@@ -291,6 +291,16 @@ docker compose exec api python -m app.tarefas.creditar_semestre
 
 ## Publicação na nuvem
 
+O sistema está no ar em **https://sistema-moeda-estudantil.vercel.app** (a API fica em https://moeda-estudantil-api-gmkt.onrender.com, com a documentação em `/docs`).
+
+Usuários já cadastrados na nuvem, todos com a senha `senha1234`:
+
+| Perfil | Logins |
+|---|---|
+| Professor | `prof.carlos`, `prof.ana`, `prof.marcos` |
+| Aluno | `aluno.joao`, `aluno.maria` |
+| Empresa parceira | `empresa.cantina`, `empresa.livraria` |
+
 | Parte | Serviço | Observação |
 |---|---|---|
 | Front-end | Vercel | build estático de `src/front` |
