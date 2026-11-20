@@ -1,0 +1,41 @@
+name: Publicar na Render
+
+# Entra em ação quando o workflow "Testes" termina com sucesso num commit da main.
+on:
+  workflow_run:
+    workflows: ["Testes"]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  render:
+    name: Render
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'
+    runs-on: ubuntu-latest
+    env:
+      URL_DA_API: https://moeda-estudantil-api-gmkt.onrender.com
+      COMMIT: ${{ github.event.workflow_run.head_sha }}
+    steps:
+      - name: Disparar o deploy
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$RENDER_DEPLOY_HOOK" ]; then
+            echo "::error::Falta o segredo RENDER_DEPLOY_HOOK (endereço do Deploy Hook da Render)."
+            exit 1
+          fi
+          curl -fsS -X POST "${RENDER_DEPLOY_HOOK}&ref=${COMMIT}" > /dev/null
+          echo "Deploy do commit ${COMMIT} pedido à Render."
+      - name: Esperar a API publicar este commit
+        run: |
+          for i in $(seq 1 60); do
+            versao=$(curl -fsS -m 30 "$URL_DA_API/saude" 2>/dev/null | python3 -c "import sys, json; print(json.load(sys.stdin).get('versao', ''))" 2>/dev/null || true)
+            echo "tentativa $i: versão publicada = ${versao:-sem resposta}"
+            if [ "$versao" = "$COMMIT" ]; then
+              echo "A API está publicada no commit ${COMMIT}."
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "::error::A API não publicou o commit ${COMMIT} a tempo."
+          exit 1
