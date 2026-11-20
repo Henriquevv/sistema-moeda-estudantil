@@ -1,6 +1,7 @@
 name: Testes
 
 # Roda a cada commit na main e em cada pull request para a main.
+# Quando passa na main, os workflows "Publicar na Render" e "Publicar na Vercel" entram em ação.
 on:
   push:
     branches: [main]
@@ -49,36 +50,3 @@ jobs:
         run: npm test
       - name: Gerar o build
         run: npm run build
-
-  render:
-    name: Publicar na Render
-    # Só publica em commits na main, depois que a API e o front passaram nos testes.
-    needs: [api, front]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    env:
-      URL_DA_API: https://moeda-estudantil-api-gmkt.onrender.com
-    steps:
-      - name: Disparar o deploy
-        env:
-          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
-        run: |
-          if [ -z "$RENDER_DEPLOY_HOOK" ]; then
-            echo "::error::Falta o segredo RENDER_DEPLOY_HOOK (endereço do Deploy Hook da Render)."
-            exit 1
-          fi
-          curl -fsS -X POST "${RENDER_DEPLOY_HOOK}&ref=${GITHUB_SHA}" > /dev/null
-          echo "Deploy do commit ${GITHUB_SHA} pedido à Render."
-      - name: Esperar a API publicar este commit
-        run: |
-          for i in $(seq 1 60); do
-            versao=$(curl -fsS -m 30 "$URL_DA_API/saude" 2>/dev/null | python3 -c "import sys, json; print(json.load(sys.stdin).get('versao', ''))" 2>/dev/null || true)
-            echo "tentativa $i: versão publicada = ${versao:-sem resposta}"
-            if [ "$versao" = "$GITHUB_SHA" ]; then
-              echo "A API está publicada no commit ${GITHUB_SHA}."
-              exit 0
-            fi
-            sleep 15
-          done
-          echo "::error::A API não publicou o commit ${GITHUB_SHA} a tempo."
-          exit 1
